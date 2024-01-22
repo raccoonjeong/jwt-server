@@ -15,14 +15,7 @@ public class MyFilter1 implements Filter {
                          ServletResponse response,
                          FilterChain chain) throws IOException, ServletException {
 
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
-
-        String headerAuth = req.getHeader("Authorization");
-        System.out.println(headerAuth);
-        
         System.out.println("필터1");
-        chain.doFilter(request, response);
-
+       chain.doFilter(request, response);
     }
 }
