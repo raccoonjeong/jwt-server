@@ -27,7 +27,7 @@ public class MyFilter3 implements Filter {
             System.out.println(headerAuth);
             System.out.println("필터3");
 
-            if (headerAuth.equals("cos")) {
+            if ("cos".equals(headerAuth)) {
                 chain.doFilter(req, res);
             } else {
                 PrintWriter out = res.getWriter();
