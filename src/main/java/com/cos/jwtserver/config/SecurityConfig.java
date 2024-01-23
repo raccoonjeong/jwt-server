@@ -2,8 +2,10 @@ package com.cos.jwtserver.config;
 
 import com.cos.jwtserver.config.auth.PrincipalDetailService;
 import com.cos.jwtserver.config.jwt.JwtAuthenticationFilter;
+import com.cos.jwtserver.config.jwt.JwtAuthorizationFilter;
 import com.cos.jwtserver.filter.MyFilter1;
 import com.cos.jwtserver.filter.MyFilter3;
+import com.cos.jwtserver.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +29,7 @@ public class SecurityConfig {
 
     private final CorsFilter corsFilter;
     private final PrincipalDetailService userDetailsService;
+    private final UserRepository userRepository;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -34,7 +37,7 @@ public class SecurityConfig {
 
         AuthenticationManagerBuilder sharedObject = http.getSharedObject(AuthenticationManagerBuilder.class);
 
-//        sharedObject.userDetailsService(this.userDetailsService);
+        sharedObject.userDetailsService(this.userDetailsService);
         AuthenticationManager authenticationManager = sharedObject.build();
 
         http.authenticationManager(authenticationManager);
@@ -45,7 +48,7 @@ public class SecurityConfig {
 //        http.addFilterBefore(new MyFilter3(), BasicAuthenticationFilter.class);
 
         // 스프링 시큐리티 이전에 가장 빨리 동작하는 필터가 된다.
-        http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class);
+//        http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class);
         http.csrf(CsrfConfigurer::disable);
 
         // 세션을 사용하지 않겠다.
@@ -53,9 +56,10 @@ public class SecurityConfig {
         http.addFilter(corsFilter); //@CrossOrigin(인증X), 시큐리티 필터에 등록 인증O
         // 폼태그로 로그인을 안하겠다.
         http.formLogin(form -> form.disable());
+        http.httpBasic(httpBasic -> httpBasic.disable());
 //        http.formLogin(form -> form.loginProcessingUrl("/login"));
         http.addFilter(new JwtAuthenticationFilter(authenticationManager)); // authenticationManager도 줘야함
-        http.httpBasic(httpBasic -> httpBasic.disable());
+        http.addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository));
         http.authorizeHttpRequests(auth ->
                 auth.requestMatchers("/api/v1/user/**")
                         .hasAnyRole("USER", "MANAGER", "ADMIN")
