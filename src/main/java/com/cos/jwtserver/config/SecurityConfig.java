@@ -1,5 +1,6 @@
 package com.cos.jwtserver.config;
 
+import com.cos.jwtserver.config.auth.PrincipalDetailService;
 import com.cos.jwtserver.config.jwt.JwtAuthenticationFilter;
 import com.cos.jwtserver.filter.MyFilter1;
 import com.cos.jwtserver.filter.MyFilter3;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,10 +26,18 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     private final CorsFilter corsFilter;
+    private final PrincipalDetailService userDetailsService;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        AuthenticationManager authenticationManager =  http.getSharedObject(AuthenticationManager.class);
+//        AuthenticationManager authenticationManager =  http.getSharedObject(AuthenticationManager.class);
+
+        AuthenticationManagerBuilder sharedObject = http.getSharedObject(AuthenticationManagerBuilder.class);
+
+//        sharedObject.userDetailsService(this.userDetailsService);
+        AuthenticationManager authenticationManager = sharedObject.build();
+
+        http.authenticationManager(authenticationManager);
 
         // BasicAuthenticationFilter가 동작하기전에 MyFilter3이 동작한다.
         // After든 Before든 직접 만든 Filter보다는 똑같이 먼저 동작함
